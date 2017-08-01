@@ -1,44 +1,42 @@
 # Go Styleguide
 
-This serves as a supplement to
-[Effective Go](https://golang.org/doc/effective_go.html), based on years of 
-experience and inspiration/ideas from conference talks.
+이 가이드라인은 다년간의 경험과 컨퍼런스등에서 나온 영감 및 아이디어에 기반해 [Effective Go](https://golang.org/doc/effective_go.html)를 보충하는 내용을 담았습니다.
 
-## Table of contents
+## 목차
 
-- [Add context to errors](#add-context-to-errors)
-- [Dependency managemenet](#dependency-management)
-	- [Use dep](#use-dep)
-	- [Use Semantic Versioning](#use-semantic-versioning)
-	- [Avoid gopkg.in](#avoid-gopkgin)
-- [Structured logging](#structured-logging)
-- [Avoid global variables](#avoid-global-variables)
-- [Testing](#testing)
-	- [Use assert-libraries](#use-assert-libraries)
-	- [Use table-driven tests](#use-table-driven-tests)
-	- [Avoid mocks](#avoid-mocks)
-	- [Avoid DeepEqual](#avoid-deepequal)
-	- [Avoid testing unexported funcs](#avoid-testing-unexported-funcs)
-- [Use linters](#use-linters)
-- [Use gofmt](#use-gofmt)
-- [Avoid side effects](#avoid-side-effects)
-- [Favour pure funcs](#favour-pure-funcs)
-- [Don't over-interface](#dont-over-interface)
-- [Don't under-package](#dont-under-package)
-- [Handle signals](#handle-signals)
-- [Divide imports](#divide-imports)
-- [Avoid unadorned return](#avoid-unadorned-return)
-- [Use package comment](#use-package-comment)
-- [Avoid empty interface](#avoid-empty-interface)
-- [Main first](#main-first)
-- [Use internal packages](#use-internal-packages)
-- [Avoid helper/util](#avoid-helperutil)
-- [Embed binary data](#embed-binary-data)
-- [Use decorator pattern](#use-decorator-pattern)
+- [에러에 컨텍스트를 추가하세요](#에러에-컨텍스트를-추가하세요)
+- [의존성 관리](#의존성-관리)
+  - [dep을 사용하세요](#dep을-사용하세요)
+  - [Semantic Versioning을 사용하세요](#semantic-versioning을-사용하세요)
+  - [gopkg.in 사용을 지양하세요](#gopkgin-사용을-지양하세요)
+- [구조적 로깅](#구조적-로깅)
+- [전역 변수를 피하세요](#전역-변수를-피하세요)
+- [테스팅](#테스팅)
+  - [Assert 라이브러리를 사용하세요](#assert-라이브러리를-사용하세요)
+  - [테이블 기반 테스트를 하세요](#테이블-기반-테스트를-하세요)
+  - [모킹을 지양하세요](#모킹을-지양하세요)
+  - [DeepEqual 사용을 지양하세요](#deepequal-사용을-지양하세요)
+  - [노출되지 않은 함수를 테스팅하지 마세요](#노출되지-않은-함수를-테스팅하지-마세요)
+- [Linter를 사용하세요](#linter를-사용하세요)
+- [gofmt를 사용하세요](#gofmt를-사용하세요)
+- [사이드 이펙트를 피하세요](#사이드-이펙트를-피하세요)
+- [순수 함수를 지향하세요](#순수-함수를-지향하세요)
+- [과한 인터페이스는 피하세요](#과한-인터페이스는-피하세요)
+- [거대한 패키징은 피하세요](#거대한-패키징은-피하세요)
+- [시그널 처리](#시그널-처리)
+- [임포트를 나누세요](#임포트를-나누세요)
+- [빈 반환문 사용은 지양하세요](#빈-반환문-사용은-지양하세요)
+- [패키지 주석을 사용하세요](#패키지-주석을-사용하세요)
+- [빈 인터페이스 사용은 지양하세요](#빈-인터페이스-사용은-지양하세요)
+- [메인 함수를 맨 위에 두세요](#메인-함수를-맨-위에-두세요)
+- [내부 패키지를 사용하세요](#내부-패키지를-사용하세요)
+- [helper/util 같은 이름은 피하세요](#helperutil-같은-이름은-피하세요)
+- [바이너리 데이터를 임베딩 하세요](#바이너리-데이터를-임베딩-하세요)
+- [데코레이터 패턴을 사용하세요](#데코레이터-패턴을-사용하세요)
 
-## Add context to errors
+## 에러에 컨텍스트를 추가하세요
 
-**Don't:**
+**비권장:**
 ```go
 file, err := os.Open("foo.txt")
 if err != nil {
@@ -46,10 +44,9 @@ if err != nil {
 }
 ```
 
-Using the approach above can lead to unclear error messages because of missing
-context.
+위의 방법을 사용하면 컨텍스트가 누락되어 에러 메시지가 불분명해질 수 있습니다.
 
-**Do:**
+**권장:**
 ```go
 import "github.com/pkg/errors" // for example
 
@@ -61,39 +58,39 @@ if err != nil {
 }
 ```
 
-Wrapping errors with a custom message provides context as it gets propagated up 
-the stack. 
-This does not always make sense. 
-If you're unsure if the context of a returned error is at all times sufficient, 
-wrap it. 
-Make sure the root error is still accessible somehow for type checking.
+커스텀 메시지로 에러를 래핑하면 메시지가 에러 스택으로 전파되면서 컨텍스트를 전달합니다.
 
-## Dependency management
+이는 항상 의미있는건 아닙니다. 
 
-### Use dep
-Use [dep](https://github.com/golang/dep), since it's production ready and will 
-soon become part of the toolchain.
+만약 반환되는 에러의 컨텍스트가 항상 충분하다고 확신할 수 없는 경우에 래핑하세요.
+
+타입 체킹을 위해 루트 에러에 여전히 접근이 가능한지 확인하세요.
+
+## 의존성 관리
+
+### dep을 사용하세요
+[dep](https://github.com/golang/dep)을 사용하세요. 이는 프로덕션 준비 상태이며, 곧 툴체인의 일부로 들어갈 예정입니다.
+
 – [Sam Boyer at GopherCon 2017](https://youtu.be/5LtMb090AZI?t=27m57s)
 
-### Use Semantic Versioning
-Since `dep` can handle versions, tag your packages using 
-[Semantic Versioning](http://semver.org).
+### Semantic Versioning을 사용하세요
+`dep`은 버전 관리가 가능하므로 [Semantic Versioning](http://semver.org)을 사용해 패키지를 태그하세요.
 
-### Avoid gopkg.in
-While [gopkg.in](http://labix.org/gopkg.in) is a great tool and was really 
-useful, it tags one version and is not meant to work with `dep`. 
-Prefer direct import and specify version in `Gopkg.toml`.
+### gopkg.in 사용을 지양하세요
+[gopkg.in](http://labix.org/gopkg.in)은 훌륭한 툴이며 실제로 유용했지만, 이는 하나의 버전을 태그하며 이는 `dep`과 함께 사용할 수 없습니다.
 
-## Structured logging
+직접적인 임포트를 선호하고 `Gopkg.toml`에 버전을 명시하세요.
 
-**Don't:**
+## 구조적 로깅
+
+**비권장:**
 ```go
 log.Printf("Listening on :%d", port)
 http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 // 2017/07/29 13:05:50 Listening on :80
 ```
 
-**Do:**
+**권장:**
 ```go
 import "github.com/uber-go/zap" // for example
 
@@ -109,12 +106,11 @@ http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 // {"level":"info","ts":1501326297.511464,"caller":"Desktop/structured.go:17","msg":"Server started","port":80,"env":"production"}
 ```
 
-This is a harmless example, but using structured logging makes debugging and log 
-parsing easier.
+구조적 로깅은 디버깅과 로그 파싱을 쉽게 만들어 줍니다.
 
-## Avoid global variables
+## 전역 변수를 피하세요
 
-**Don't:**
+**비권장:**
 ```go
 var db *sql.DB
 
@@ -129,10 +125,9 @@ func DropHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Global variables make testing and readability hard and every method has access 
-to them (even those, that don't need it).
+전역 변수는 테스팅과 가독성을 어렵게 만들며 모든 메서드에서 접근을 가능하게 만듭니다. (메서드들이 이를 필요로하지 않음에도)
 
-**Do:**
+**권장:**
 ```go
 func main() {
 	db := // ...
@@ -147,14 +142,13 @@ func DropHandler(db *sql.DB) http.HandleFunc {
 }
 ```
 
-Use higher-order functions instead of global variables to inject dependencies 
-accordingly.
+전역 변수 대신 고차원 함수를 사용해 의존성을 적절히 주입하세요.
 
-## Testing
+## 테스팅
 
-### Use assert-libraries
+### Assert 라이브러리를 사용하세요
 
-**Don't:**
+**비권장:**
 ```go
 func TestAdd(t *testing.T) {
 	actual := 2 + 2
@@ -165,7 +159,7 @@ func TestAdd(t *testing.T) {
 }
 ```
 
-**Do:**
+**권장:**
 ```go
 import "github.com/stretchr/testify/assert" // for example
 
@@ -176,12 +170,11 @@ func TestAdd(t *testing.T) {
 }
 ```
 
-Using assert libraries makes your tests more readable, requires less code and 
-provides consistent error output.
+테스트를 보다 읽기 쉽게 하기위해 assert 라이브러리를 사용하세요. 이는 더 적은 코드로도 테스트 작성이 가능하며 일관성 있는 에러 메시지를 제공합니다.
 
-### Use table driven tests
+### 테이블 기반 테스트를 하세요
 
-**Don't:**
+**비권장:**
 ```go
 func TestAdd(t *testing.T) {
 	assert.Equal(t, 1+1, 2)
@@ -191,10 +184,9 @@ func TestAdd(t *testing.T) {
 }
 ```
 
-The above approach looks simpler, but it's much harder to find a failing case, 
-especially when having hundreds of cases.
+이 방식은 간단해 보이지만 실패 케이스를 찾기가 어려우며, 특히 케이스가 많은 경우엔 더더욱 어렵습니다.
 
-**Do:**
+**권장:**
 ```go
 func TestAdd(t *testing.T) {
 	cases := []struct {
@@ -214,12 +206,13 @@ func TestAdd(t *testing.T) {
 }
 ```
 
-Using table driven tests in combination with subtests gives you direct insight about which case is failing and which cases are tested.
+하위 테스트와 함께 테이블 기반 테스트를 사용하면 어떤 케이스가 실패했고 성공했는지를 직접 파악할 수 있습니다.
+
 – [Mitchell Hashimoto at GopherCon 2017](https://youtu.be/8hQG7QlcLBk?t=7m34s)
 
-### Avoid mocks
+### 모킹을 지양하세요
 
-**Don't:**
+**비권장:**
 ```go
 func TestRun(t *testing.T) {
 	mockConn := new(MockConn)
@@ -227,7 +220,7 @@ func TestRun(t *testing.T) {
 }
 ```
 
-**Do:**
+**권장:**
 ```go
 func TestRun(t *testing.T) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -247,11 +240,11 @@ func TestRun(t *testing.T) {
 }
 ```
 
-Only use mocks if not otherwise possible, favor real implementations. – [Mitchell Hashimoto at GopherCon 2017](https://youtu.be/8hQG7QlcLBk?t=26m51s)
+다른 가능한 대안이 전혀 없는 경우에만 모킹을 사용하고, 가급적 실제 구현체 사용을 지향하세요. – [Mitchell Hashimoto at GopherCon 2017](https://youtu.be/8hQG7QlcLBk?t=26m51s)
 
-### Avoid DeepEqual
+### DeepEqual 사용을 지양하세요
 
-**Don't:**
+**비권장:**
 ```go
 type myType struct {
 	id         int
@@ -266,7 +259,7 @@ func TestSomething(t *testing.T) {
 }
 ```
 
-**Do:**
+**권장:**
 ```go
 type myType struct {
 	id         int
@@ -288,43 +281,45 @@ func TestSomething(t *testing.T) {
 }
 ```
 
-Using `testString()` for comparing structs helps on complex structs with many fields that are not relevant for the equality check.
-This approach only makes sense for very big or tree-like structs.
+구조체를 비교하기 위해 `testString()`을 사용하면 동등 비교와 관련 없는 여러개의 필드가 있는 복잡한 구조체를 비교할 때 유용합니다.
+
+이 방법은 매우 크거나 트리 형태의 구조체에 대해서만 유의미합니다.
+
 – [Mitchell Hashimoto at GopherCon 2017](https://youtu.be/8hQG7QlcLBk?t=30m45s)
 
-### Avoid testing unexported funcs
+### 노출되지 않은 함수를 테스팅하지 마세요
 
-Only test unexported funcs if you can't access a path via exported funcs. Since they are unexported, they are prone to change.
+노출된 함수로 접근이 불가능한 경우엥만 노출되지 않은 함수를 테스트하세요. 이들은 노출된 함수가 아니기 때문에 코드가 변경되기 쉽습니다.
 
-## Use linters
+## Linter를 사용하세요
 
-Use linters (e.g. [gometalinter](https://github.com/alecthomas/gometalinter)) to 
-lint your projects before committing.
+커밋 전에 프로젝트를 linting 하기 위해 linter (예: [gometalinter](https://github.com/alecthomas/gometalinter))를 사용하세요.
 
-## Use gofmt
+## gofmt를 사용하세요
 
-Only commit gofmt'd files, use `-s` to simplify code.
+gofmt를 거친 파일들만 커밋하세요. `-s`를 사용해 코드를 깔끔하게 만드세요.
 
-## Avoid side-effects
+## 사이드 이펙트를 피하세요
 
-**Don't:**
+**비권장:**
 ```go
 func init() {
 	someStruct.Load()
 }
 ```
 
-Side effects are only okay in special cases (e.g. parsing flags in a cmd). If you find no other way, rethink and refactor.
+사이드 이펙트는 오직 특정 상황에서만 허용됩니다. (예: cmd에서 플래그 파싱) 다른 방법을 못 찾겠다면, 다시 생각하고 리팩토링을 해보세요.
 
-## Favour pure funcs
+## 순수 함수를 지향하세요
 
-> In computer programming, a function may be considered a pure function if both of the following statements about the function hold:
-> 1. The function always evaluates the same result value given the same argument value(s). The function result value cannot depend on any hidden information or state that may change while program execution proceeds or between different executions of the program, nor can it depend on any external input from I/O devices.
-> 2. Evaluation of the result does not cause any semantically observable side effect or output, such as mutation of mutable objects or output to I/O devices.
+> 컴퓨터 프로그래밍에서, 함수에 대한 다음의 문장들이 모두 성립하면 그 함수는 순수한 함수로 간주될 수 있습니다:
+>
+> 1. 함수는 항상 같은 인자에 대해선 같은 결과값을 반환한다. 함수의 반환값은 그 어떤 숨겨진 정보나 프로그램의 실행시점이나 다른 프로그램의 실행중에 변할 수 있는 상태에 의존해서는 안되며 또한 I/O 디바이스로부터의 그 어떤 외부 입력에 의존해서도 안된다.
+> 2. 결과의 수행은 변경 가능한 객체의 변형이나 I/O 디바이스로의 출력과 같은 의미상 관찰 가능한 사이드 이펙트나 출력이 발생하지 않는다.
 
 – [Wikipedia](https://en.wikipedia.org/wiki/Pure_function)
 
-**Don't:**
+**비권장:**
 ```go
 func MarshalAndWrite(some *Thing) error {
 	b, err := json.Marshal(some)
@@ -336,7 +331,7 @@ func MarshalAndWrite(some *Thing) error {
 }
 ```
 
-**Do:**
+**권장:**
 ```go
 // Marshal is a pure func (even though useless)
 func Marshal(some *Thing) ([]bytes, error) {
@@ -346,11 +341,11 @@ func Marshal(some *Thing) ([]bytes, error) {
 // ...
 ```
 
-This is obviously not possible at all times, but trying to make every possible func pure makes code more understandable and improves debugging.
+이는 알다시피 모든 경우에 대해 가능하지는 않지만, 가능한한 순수한 함수를 작성하여 코드를 이해하기 쉽고 디버깅 하기 쉽도록 만드세요.
 
-## Don't over-interface
+## 과한 인터페이스는 피하세요
 
-**Don't:**
+**비권장:**
 ```go
 type Server interface {
 	Serve() error
@@ -371,7 +366,7 @@ func run(srv Server) {
 }
 ```
 
-**Do:**
+**권장:**
 ```go
 type Server interface {
 	Serve() error
@@ -386,15 +381,15 @@ func run(srv Server) {
 }
 ```
 
-Favour small interfaces and only expect the interfaces you need in your funcs.
+작은 인터페이스 사용을 지향하고 함수는 함수가 필요로 하는 인터페이스만 받도록 만드세요.
 
-## Don't under-package
+## 거대한 패키징은 피하세요
 
-Deleting or merging packages is fare more easier than splitting big ones up. When unsure if a package can be split, do it.
+패키지를 삭제하고 합치는건 큰 패키지를 분리하는 것보다 훨씬 쉽습니다. 패키지를 분리할 수 있는지 확신이 서지 않을 땐 분리하세요.
 
-## Handle signals
+## 시그널 처리
 
-**Don't:**
+**비권장:**
 ```go
 func main() {
 	for {
@@ -404,7 +399,7 @@ func main() {
 }
 ```
 
-**Do:**
+**권장:**
 ```go
 func main() {
 	logger := // ...
@@ -431,11 +426,11 @@ func main() {
 }
 ```
 
-Handling signals allows us to gracefully stop our server, close open files and connections and therefore prevent file corruption among other things.
+시그널 처리를 통해 서버를 정상적으로 종료하고 열린 파일 및 연결을 닫을 수 있으므로, 다른 것들 사이에서의 파일 손상을 방지할 수 있습니다.
 
-## Divide imports
+## 임포트를 나누세요
 
-**Don't:**
+**비권장:**
 ```go
 import (
 	"encoding/json"
@@ -446,7 +441,7 @@ import (
 )
 ```
 
-**Do:**
+**권장:**
 ```go
 import (
 	"encoding/json"
@@ -459,11 +454,11 @@ import (
 )
 ```
 
-Dividing std, external and internal imports improves readability.
+표준, 외부 그리고 내부 패키지 임포트를 분리하면 가독성이 높아집니다.
 
-## Avoid unadorned return
+## 빈 반환문 사용은 지양하세요
 
-**Don't:**
+**비권장:**
 ```go
 func run() (n int, err error) {
 	// ...
@@ -471,7 +466,7 @@ func run() (n int, err error) {
 }
 ```
 
-**Do:**
+**권장:**
 ```go
 func run() (n int, err error) {
 	// ...
@@ -479,36 +474,36 @@ func run() (n int, err error) {
 }
 ```
 
-Named returns are good for documentation, unadorned returns are bad for readability and error-prone.
+명명된 반환문은 문서화에 용이하며, 빈 반환문은 가독성에도 안좋으며 에러를 발생시키기가 쉽습니다.
 
-## Use package comment
+## 패키지 주석을 사용하세요
 
-**Don't:**
+**비권장:**
 ```go
 package sub
 ```
 
-**Do:**
+**권장:**
 ```go
 package sub // import "github.com/my-package/pkg/sth/else/sub"
 ```
 
-Adding the package comment adds context to the package and makes importing easy.
+패키지에 주석을 추가하여 패키지에 컨텍스트를 추가하고 임포트 하기를 쉽게 만들도록 하세요.
 
-## Avoid empty interface
+## 빈 인터페이스 사용은 지양하세요
 
-**Don't:**
+**비권장:**
 ```go
 func run(foo interface{}) {
 	// ...
 }
 ```
 
-Empty interfaces make code more complex and unclear, avoid them where you can.
+빈 인터페이스는 코드를 더욱 복잡하고 덜 깔끔하게 만드므로 가능하다면 지양하세요.
 
-## Main first
+## 메인 함수를 맨 위에 두세요
 
-**Don't:**
+**비권장:**
 ```go
 package main // import "github.com/me/my-project"
 
@@ -529,7 +524,7 @@ func main() {
 }
 ```
 
-**Do:**
+**권장:**
 ```go
 package main // import "github.com/me/my-project"
 
@@ -550,23 +545,23 @@ func someOtherHelper() string {
 }
 ```
 
-Putting `main()` first makes reading the file a lot more easier. Only the `init()` function should be above it.
+`main()`을 맨 위에 두면 파일을 읽기가 더욱 수월해집니다. `init()` 함수만이 메인 함수 위에 위치하도록 하세요.
 
-## Use internal packages
+## 내부 패키지를 사용하세요
 
-If you're creating a cmd, consider moving libraries to `internal/` to prevent import of unstable, changing packages.
+cmd를 만들고 있다면 라이브러리들을 `internal/`로 옮겨 불안정한 임포트나 패키지 변경을 방지하세요.
 
-## Avoid helper/util
+## helper/util 같은 이름은 피하세요
 
-Use clear names and try to avoid creating a `helper.go`, `utils.go` or even package.
+간단명료한 이름을 사용하도록 하며 `helper.go`나 `utils.go`와 같은 이름을 갖는 파일 혹은 패키지들은 지양하세요 
 
-## Embed binary data
+## 바이너리 데이터를 임베딩 하세요
 
-To enable single-binary deployments, use tools to add templates and other static 
-assets to your binary 
-(e.g. [github.com/jteeuwen/go-bindata](https://github.com/jteeuwen/go-bindata)).
+단일 바이너리 배포를 위해선 템플릿과 기타 정적 애셋들을 바이너리에 추가할 수 있는 툴을 사용하세요.
 
-## Use decorator pattern
+(예: [github.com/jteeuwen/go-bindata](https://github.com/jteeuwen/go-bindata)).
+
+## 데코레이터 패턴을 사용하세요
 
 ```go
 type Config struct {
